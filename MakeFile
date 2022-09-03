@@ -1,0 +1,17 @@
+install:
+	cargo install diesel_cli --no-default-features --features postgres
+
+set_db_url:
+	echo DATABASE_URL=postgres://apple@password/rust_graphql_example > .env
+
+init:
+	diesel setup
+
+migrate:
+	diesel migration generate create_members
+
+run:
+	cargo run
+
+kill:
+	kill -INT $(lsof -t -i :8080)
