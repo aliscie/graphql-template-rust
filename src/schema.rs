@@ -1,22 +1,24 @@
-table! {
+// @generated automatically by Diesel CLI.
+
+diesel::table! {
     members (id) {
         id -> Int4,
-        name -> Varchar,
+        name -> Text,
         knockouts -> Int4,
         team_id -> Int4,
     }
 }
 
-table! {
+diesel::table! {
     teams (id) {
         id -> Int4,
-        name -> Varchar,
+        name -> Text,
     }
 }
 
-joinable!(members -> teams (team_id));
+diesel::joinable!(members -> teams (team_id));
 
-allow_tables_to_appear_in_same_query!(
+diesel::allow_tables_to_appear_in_same_query!(
     members,
     teams,
 );

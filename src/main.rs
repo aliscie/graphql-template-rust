@@ -1,61 +1,65 @@
-#[macro_use]
-extern crate diesel;
-extern crate dotenv;
-extern crate juniper;
-
 use std::io;
+
+#[macro_use] extern crate serde;
+#[macro_use] extern crate juniper;
+
+use actix_cors::Cors;
+use actix_web::{middleware, web, App, HttpResponse, HttpServer};
+use dotenv::dotenv;
+mod handlers;
+mod schema;
+mod db;
+mod schema_graphql;
+mod models;
+
+use self::db::establish_connection;
+use self::handlers::{graphql, playground, graphiql_route};
+use self::schema_graphql::create_schema;
+
 use std::sync::Arc;
 
-use actix_web::{web, App, Error, HttpResponse, HttpServer};
-use dotenv::dotenv;
-use futures::future::Future;
-use juniper::http::graphiql::graphiql_source;
-use juniper::http::GraphQLRequest;
+#[actix_rt::main]
+async fn main() -> io::Result<()> {
+    // load .env variables
+    dotenv().ok();
+    let host = "127.0.0.1";
+    let port = "5000";
 
-mod db;
-mod graphql_schema;
-mod schema;
+    // configure logging
+    std::env::set_var("RUST_LOG", "actix_web=info");
+    env_logger::init();
 
-use crate::db::establish_connection;
-use crate::graphql_schema::{create_schema, Context, Schema};
+    // create Juniper schema
+    let schema = Arc::new(create_schema());
+
+    // database connection pool
+    let db_pool = establish_connection();
 
 
-fn graphiql() -> HttpResponse {
-    let html = graphiql_source("http://localhost:8080/graphql");
-    HttpResponse::Ok()
-        .content_type("text/html; charset=utf-8")
-        .body(html)
-}
+    println!("Starting GraphQL server at http://{}:{}", host, port);
 
-fn graphql(
-    st: web::Data<Arc<Schema>>,
-    ctx: web::Data<Context>,
-    data: web::Json<GraphQLRequest>,
-) -> impl Future<Item = HttpResponse, Error = Error> {
-    web::block(move || {
-        let res = data.execute(&st, &ctx);
-        Ok::<_, serde_json::error::Error>(serde_json::to_string(&res)?)
-    })
-    .map_err(Error::from)
-    .and_then(|user| {
-        Ok(HttpResponse::Ok()
-            .content_type("application/json")
-            .body(user))
-    })
-}
-
-fn main() -> io::Result<()> {
-     dotenv().ok();
-    let pool = establish_connection();
-    let schema_context = Context { db: pool.clone() };
-    let schema = std::sync::Arc::new(create_schema());
+    // start http server
     HttpServer::new(move || {
         App::new()
-            .data(schema.clone())
-            .data(schema_context.clone())
-            .service(web::resource("/graphql").route(web::post().to_async(graphql)))
-            .service(web::resource("/graphiql").route(web::get().to(graphiql)))
+            .data(db_pool.clone())
+            .app_data(schema.clone())
+            .wrap(middleware::Compress::default())
+            .wrap(middleware::Logger::default())
+            .wrap(Cors::permissive()) // allow all cross origin requests
+            .service(
+                web::resource("/graphql")
+                    .route(web::get().to(graphql))
+                    .route(web::post().to(graphql)),
+            )
+            .service(web::resource("/playground").route(web::get().to(playground)))
+              .default_service(web::route().to(|| async {
+                HttpResponse::Found()
+                    .header("location", "/playground")
+                    .finish()
+            }))
+            .service(web::resource("/graphiql").route(web::get().to(graphiql_route)))
     })
-    .bind("localhost:8080")?
+    .bind(format!("{}:{}", host, port))?
     .run()
+    .await
 }
