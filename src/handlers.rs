@@ -1,26 +1,28 @@
+use actix_web::{web, Error, HttpRequest, HttpResponse, Responder, route, get};
+use juniper::http::{playground::playground_source, GraphQLRequest};
+use sea_orm::DatabaseConnection;
 
-use actix_web::{web, Error, HttpRequest, HttpResponse};
-
-use crate::db::DbPool;
 use crate::schema_graphql::{create_context, Schema};
-use juniper_actix::{graphql_handler, playground_handler, graphiql_handler};
+use juniper_actix::{graphiql_handler, playground_handler};
 
-
-pub async fn playground() -> Result<HttpResponse, Error> {
-    playground_handler("/graphql", Some("/subscriptions")).await
+#[get("/playground")]
+pub async fn playground() -> impl Responder {
+    playground_handler("/graphql", None).await
 }
 
-pub async fn graphql(
-    req: actix_web::HttpRequest,
-    payload: actix_web::web::Payload,
-    schema: web::Data<Schema>,
-    db_pool : web::Data<DbPool>,
-) -> Result<HttpResponse, Error> {
-    let db_pool = (*db_pool).clone();
-    let context = create_context(db_pool);
-    graphql_handler(&schema, &context, req, payload).await
-}
-
-pub async fn graphiql_route() -> Result<HttpResponse, Error> {
+#[get("/graphiql")]
+pub async fn graphiql() -> impl Responder {
     graphiql_handler("/graphql", None).await
+}
+
+
+#[route("/graphql", method = "GET", method = "POST")]
+pub async fn graphql(
+    pool: web::Data<DatabaseConnection>,
+    schema: web::Data<Schema>,
+    data: web::Json<GraphQLRequest>,
+) -> impl Responder {
+    let ctx = create_context(pool.as_ref().clone());
+    let res = data.execute(&schema, &ctx).await;
+    HttpResponse::Ok().json(res)
 }

@@ -1,16 +1,14 @@
 
-use std::sync::Arc;
-
 use juniper::{graphql_object, RootNode, EmptyMutation};
 use juniper::{EmptySubscription, FieldResult};
 
-use crate::db::DbPool;
-use crate::models::team::Team;
+use sea_orm::{DatabaseConnection, EntityTrait};
+use entity::teams::{Entity as Team, self};
 
 
 #[derive(Clone)]
 pub struct Context {
-    pub db_pool: Arc<DbPool>,
+    pub pool: DatabaseConnection,
 }
 
 impl juniper::Context for Context {}
@@ -20,9 +18,9 @@ pub struct QueryRoot;
 #[graphql_object(context = Context)]
 impl QueryRoot {
     #[graphql(description = "Get all teams")]
-    fn get_team(context : &Context) -> FieldResult<Vec<Team>>{
-        let connection = &mut context.db_pool.get()?;
-        let results = Team::get(connection)?;
+    async fn get_team(context : &Context) -> FieldResult<Vec<teams::Model>>{
+        let connection = &context.pool;
+        let results = Team::find().all(connection).await?;
         Ok(results)
     }
 }
@@ -34,8 +32,8 @@ pub fn create_schema() -> Schema {
     Schema::new(QueryRoot {},  EmptyMutation::new(), EmptySubscription::new())
 }
 
-pub fn create_context(db_pool: Arc<DbPool>) -> Context {
-    Context { db_pool }
+pub fn create_context(pool : DatabaseConnection) -> Context {
+    Context { pool }
 }
 
 
