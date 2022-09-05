@@ -1,6 +1,7 @@
 use std::io;
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 use actix_web::web::Data;
+use migration::{Migrator, MigratorTrait};
 
 #[macro_use] extern crate serde;
 
@@ -32,6 +33,9 @@ async fn main() -> io::Result<()> {
 
     // database connection pool
     let db_pool = establish_connection().await;
+    // running all the pending migrations
+    let _ = Migrator::up(&db_pool, None).await;
+
     let schema = Schema::build(QueryRoot, MutationRoot, EmptySubscription)
         .data(db_pool)
         .finish();
