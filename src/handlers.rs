@@ -1,28 +1,28 @@
-use actix_web::{web, Error, HttpRequest, HttpResponse, Responder, route, get};
-use juniper::http::{playground::playground_source, GraphQLRequest};
-use sea_orm::DatabaseConnection;
+use actix_web::{web,  HttpRequest, HttpResponse, Result};
+use async_graphql_actix_web::*;
+use async_graphql::http::GraphiQLSource;
 
-use crate::schema_graphql::{create_context, Schema};
-use juniper_actix::{graphiql_handler, playground_handler};
+use crate::schema_graphql::QuerySchema;
 
-#[get("/playground")]
-pub async fn playground() -> impl Responder {
-    playground_handler("/graphql", None).await
+pub async fn index(schema: web::Data<QuerySchema>, req: GraphQLRequest) -> GraphQLResponse {
+    schema.execute(req.into_inner()).await.into()
 }
 
-#[get("/graphiql")]
-pub async fn graphiql() -> impl Responder {
-    graphiql_handler("/graphql", None).await
+pub async fn index_graphiql() -> Result<HttpResponse> {
+    Ok(HttpResponse::Ok()
+        .content_type("text/html; charset=utf-8")
+        .body(
+            GraphiQLSource::build()
+                .endpoint("http://localhost:5000")
+                .subscription_endpoint("ws://localhost:8000")
+                .finish(),
+        ))
 }
 
-
-#[route("/graphql", method = "GET", method = "POST")]
-pub async fn graphql(
-    pool: web::Data<DatabaseConnection>,
-    schema: web::Data<Schema>,
-    data: web::Json<GraphQLRequest>,
-) -> impl Responder {
-    let ctx = create_context(pool.as_ref().clone());
-    let res = data.execute(&schema, &ctx).await;
-    HttpResponse::Ok().json(res)
+async fn index_ws(
+    schema: web::Data<QuerySchema>,
+    req: HttpRequest,
+    payload: web::Payload,
+) -> Result<HttpResponse> {
+    GraphQLSubscription::new(QuerySchema::clone(&*schema)).start(&req, payload)
 }

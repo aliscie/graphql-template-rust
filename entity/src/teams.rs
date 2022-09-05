@@ -1,8 +1,8 @@
-
+use async_graphql::{ComplexObject, SimpleObject};
 use sea_orm::entity::prelude::*;
-use juniper::GraphQLObject;
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, GraphQLObject)]
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, SimpleObject)]
+#[graphql(complex, name = "Team")]
 #[sea_orm(table_name = "teams")]
 pub struct Model {
     #[sea_orm(primary_key)]
@@ -24,3 +24,6 @@ impl Related<super::members::Entity> for Entity {
 }
 
 impl ActiveModelBehavior for ActiveModel {}
+
+#[ComplexObject]
+impl Model{}

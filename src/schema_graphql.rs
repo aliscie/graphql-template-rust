@@ -1,39 +1,54 @@
+use async_graphql::{Context, EmptyMutation, EmptySubscription, Object, Schema};
+use entity::teams::{self, Entity as Team};
+use sea_orm::{ActiveValue, DatabaseConnection, DbErr, EntityTrait};
 
-use juniper::{graphql_object, RootNode, EmptyMutation};
-use juniper::{EmptySubscription, FieldResult};
-
-use sea_orm::{DatabaseConnection, EntityTrait};
-use entity::teams::{Entity as Team, self};
-
-
-#[derive(Clone)]
-pub struct Context {
-    pub pool: DatabaseConnection,
-}
-
-impl juniper::Context for Context {}
+use entity::members::{self, Entity as Member};
 
 pub struct QueryRoot;
 
-#[graphql_object(context = Context)]
+#[Object]
 impl QueryRoot {
-    #[graphql(description = "Get all teams")]
-    async fn get_team(context : &Context) -> FieldResult<Vec<teams::Model>>{
-        let connection = &context.pool;
-        let results = Team::find().all(connection).await?;
-        Ok(results)
+    async fn teams<'a>(&self, ctx: &Context<'a>) -> Result<Vec<teams::Model>, DbErr> {
+        let database = ctx.data_unchecked::<DatabaseConnection>();
+        Team::find().all(database).await
+    }
+    async fn members<'a>(&self, ctx: &Context<'a>) -> Result<Vec<members::Model>, DbErr> {
+        let database = ctx.data_unchecked::<DatabaseConnection>();
+        Member::find().all(database).await
     }
 }
 
+pub struct MutationRoot;
 
-pub type Schema = RootNode<'static, QueryRoot, EmptyMutation<Context>, EmptySubscription<Context>>;
+#[Object]
+impl MutationRoot {
+    async fn create_member(
+        &self,
+        ctx: &Context<'_>,
+        name: String,
+        team_id: i32,
+    ) -> Result<members::Model, DbErr> {
+        let db = ctx.data_unchecked::<DatabaseConnection>();
+        let res = Member::insert(members::ActiveModel {
+            name: ActiveValue::Set(name),
+            team_id: ActiveValue::Set(team_id),
+            ..Default::default()
+        })
+        .exec_with_returning(db)
+        .await?;
+        return Ok(res);
+    }
 
-pub fn create_schema() -> Schema {
-    Schema::new(QueryRoot {},  EmptyMutation::new(), EmptySubscription::new())
+    async fn create_team(&self, ctx: &Context<'_>, name: String) -> Result<teams::Model, DbErr> {
+        let db = ctx.data_unchecked::<DatabaseConnection>();
+        let res = Team::insert(teams::ActiveModel {
+            name: ActiveValue::Set(name),
+            ..Default::default()
+        })
+        .exec_with_returning(db)
+        .await?;
+        return Ok(res);
+    }
 }
 
-pub fn create_context(pool : DatabaseConnection) -> Context {
-    Context { pool }
-}
-
-
+pub type QuerySchema = Schema<QueryRoot, MutationRoot, EmptySubscription>;

@@ -11,5 +11,5 @@ path = "src/lib.rs"
 
 [dependencies]
 sea-orm = { version = "^0" }
-juniper = "0.15.9"
-juniper_actix = "0.4.0"
+async-graphql = "4.0.4"
+async-graphql-actix-web = "4.0.4"
