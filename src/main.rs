@@ -1,5 +1,7 @@
+use async_graphql::*;
+
+
 use std::io;
-use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 use actix_web::web::Data;
 use migration::{Migrator, MigratorTrait};
 
@@ -57,3 +59,4 @@ async fn main() -> io::Result<()> {
     .run()
     .await
 }
+
