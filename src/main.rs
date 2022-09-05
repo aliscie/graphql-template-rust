@@ -14,7 +14,7 @@ mod models;
 
 use self::handlers::{index, index_graphiql};
 
-use self::schema_graphql::QueryRoot;
+use self::schema_graphql::{QueryRoot, MutationRoot};
 use self::db::establish_connection;
 
 #[actix_web::main]
@@ -32,7 +32,7 @@ async fn main() -> io::Result<()> {
 
     // database connection pool
     let db_pool = establish_connection().await;
-    let schema = Schema::build(QueryRoot, EmptyMutation, EmptySubscription)
+    let schema = Schema::build(QueryRoot, MutationRoot, EmptySubscription)
         .data(db_pool)
         .finish();
 
