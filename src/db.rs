@@ -1,15 +1,14 @@
-use diesel::pg::PgConnection;
-use diesel::r2d2::{ConnectionManager, Pool, PoolError};
-use std::env;
+use sea_orm::prelude::*;
+use dotenv::dotenv;
+use sea_orm::Database;
 
-pub type PgPool = Pool<ConnectionManager<PgConnection>>;
-
-fn init_pool(database_url: &str) -> Result<PgPool, PoolError> {
-    let manager = ConnectionManager::<PgConnection>::new(database_url);
-    Pool::builder().build(manager)
+async fn init_pool(database_url : &str) -> Result<DatabaseConnection, DbErr>{
+    Database::connect(database_url).await
 }
 
-pub fn establish_connection() -> PgPool {
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    init_pool(&database_url).expect(&format!("Error connecting to {}", database_url))
+pub async fn establish_connection() -> DatabaseConnection {
+    dotenv().ok();
+    let database_url =  std::env::var("DATABASE_URL").expect("POSTGRES url not given!");
+    init_pool(&database_url).await.unwrap_or_else(|_| panic!("Error connecting to {}", database_url))
 }
+

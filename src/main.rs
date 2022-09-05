@@ -1,61 +1,59 @@
-#[macro_use]
-extern crate diesel;
-extern crate dotenv;
-extern crate juniper;
-
 use std::io;
-use std::sync::Arc;
+use async_graphql::{EmptyMutation, EmptySubscription, Schema};
+use actix_web::web::Data;
+use migration::{Migrator, MigratorTrait};
 
-use actix_web::{web, App, Error, HttpResponse, HttpServer};
+#[macro_use] extern crate serde;
+
+use actix_cors::Cors;
+use actix_web::{middleware, web, App, HttpResponse, HttpServer, guard};
 use dotenv::dotenv;
-use futures::future::Future;
-use juniper::http::graphiql::graphiql_source;
-use juniper::http::GraphQLRequest;
-
+mod handlers;
 mod db;
-mod graphql_schema;
-mod schema;
+mod schema_graphql;
+mod models;
 
-use crate::db::establish_connection;
-use crate::graphql_schema::{create_schema, Context, Schema};
+use self::handlers::{index, index_graphiql};
+
+use self::schema_graphql::{QueryRoot, MutationRoot};
+use self::db::establish_connection;
+
+#[actix_web::main]
+async fn main() -> io::Result<()> {
+    // load .env variables
+    dotenv().ok();
+    let host = "0.0.0.0";
+    let port = "5000";
+
+    // configure logging
+    std::env::set_var("RUST_LOG", "debug");
+    std::env::set_var("RUST_BACKTRACE", "1");
+    env_logger::init();
 
 
-fn graphiql() -> HttpResponse {
-    let html = graphiql_source("http://localhost:8080/graphql");
-    HttpResponse::Ok()
-        .content_type("text/html; charset=utf-8")
-        .body(html)
-}
+    // database connection pool
+    let db_pool = establish_connection().await;
+    // running all the pending migrations
+    let _ = Migrator::up(&db_pool, None).await;
 
-fn graphql(
-    st: web::Data<Arc<Schema>>,
-    ctx: web::Data<Context>,
-    data: web::Json<GraphQLRequest>,
-) -> impl Future<Item = HttpResponse, Error = Error> {
-    web::block(move || {
-        let res = data.execute(&st, &ctx);
-        Ok::<_, serde_json::error::Error>(serde_json::to_string(&res)?)
-    })
-    .map_err(Error::from)
-    .and_then(|user| {
-        Ok(HttpResponse::Ok()
-            .content_type("application/json")
-            .body(user))
-    })
-}
+    let schema = Schema::build(QueryRoot, MutationRoot, EmptySubscription)
+        .data(db_pool)
+        .finish();
 
-fn main() -> io::Result<()> {
-     dotenv().ok();
-    let pool = establish_connection();
-    let schema_context = Context { db: pool.clone() };
-    let schema = std::sync::Arc::new(create_schema());
+
+    println!("Starting GraphQL server at http://{}:{}", host, port);
+
+    // start http server
     HttpServer::new(move || {
         App::new()
-            .data(schema.clone())
-            .data(schema_context.clone())
-            .service(web::resource("/graphql").route(web::post().to_async(graphql)))
-            .service(web::resource("/graphiql").route(web::get().to(graphiql)))
+            .wrap(middleware::Compress::default())
+            .wrap(middleware::Logger::default())
+            .wrap(Cors::permissive()) // allow all cross origin requests
+            .app_data(Data::new(schema.clone()))
+            .service(web::resource("/").guard(guard::Post()).to(index))
+            .service(web::resource("/").guard(guard::Get()).to(index_graphiql))
     })
-    .bind("localhost:8080")?
+    .bind(format!("{}:{}", host, port))?
     .run()
+    .await
 }
