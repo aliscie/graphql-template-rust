@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+
+  db:
+    container_name: postgresql_db
+    image: postgres
+    restart: always
+    ports:
+      - 10000:5432
+    environment:
+      - POSTGRES_USER=lunchspider
+      - POSTGRES_PASSWORD=archi
+      - POSTGRES_DB=autodoxgraphql
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=lunchspider03@gmail.com
+      - PGADMIN_DEFAULT_PASSWORD=archi
+    ports:
+      - 5050:80
+    depends_on:
+      - db
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+  rabbitmq:
+    container_name: rabbitmq
+    hostname: rabbitmq
+    image: rabbitmq:latest
+    ports:
+      - "5672:5672"
+    restart: on-failure
