@@ -3,6 +3,7 @@ use sea_orm::ConnectionTrait;
 
 use async_graphql::{Context, EmptyMutation, EmptySubscription, Object, Schema, Subscription};
 use entity::teams::{self, Entity as Team};
+// use entity::posts::{self, Entity as Post};
 use futures_util::Stream;
 use sea_orm::{ActiveValue, DatabaseConnection, DbErr, EntityTrait, Statement};
 

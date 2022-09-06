@@ -3,3 +3,4 @@
 pub use super::chat_room::Entity as ChatRoom;
 pub use super::members::Entity as Members;
 pub use super::teams::Entity as Teams;
+// pub use super::posts::Entity as Posts;

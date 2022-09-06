@@ -1,6 +1,6 @@
 
 use actix_web::web::Data;
-se async_graphql::*;
+use async_graphql::*;
 // use async_graphql::{EmptyMutation, EmptySubscription, Schema, SimpleObject};
 use chrono::Utc;
 use migration::{Migrator, MigratorTrait};
