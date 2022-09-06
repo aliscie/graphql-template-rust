@@ -1,11 +1,13 @@
 install:
-	cargo install diesel_cli --no-default-features --features postgres
+	cargo install sea-orm-cli
+
 
 set_db_url:
-	echo DATABASE_URL=postgres://apple@password/rust_graphql_example > .env
+	echo postgres://lunchspider:archi@localhost:10000/autodoxgraphql > .env
 
 init:
-	diesel setup
+	sea-orm-cli migrate init
+
 
 migrate:
 	diesel migration generate create_members
