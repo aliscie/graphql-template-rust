@@ -10,16 +10,16 @@ impl MigrationTrait for Migration {
         manager
             .create_table(
                 Table::create()
-                    .table(ChatRoom::Table)
+                    .table(ChatRooms::Table)
                     .if_not_exists()
                     .col(
-                        ColumnDef::new(ChatRoom::Id)
+                        ColumnDef::new(ChatRooms::Id)
                             .integer()
                             .not_null()
                             .auto_increment()
                             .primary_key(),
                     )
-                    .col(ColumnDef::new(ChatRoom::Messages).json())
+                    .col(ColumnDef::new(ChatRooms::Messages).json_binary().not_null().default("{}"))
                     .to_owned(),
             )
             .await
@@ -27,14 +27,14 @@ impl MigrationTrait for Migration {
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         manager
-            .drop_table(Table::drop().table(ChatRoom::Table).to_owned())
+            .drop_table(Table::drop().table(ChatRooms::Table).to_owned())
             .await
     }
 }
 
 /// Learn more at https://docs.rs/sea-query#iden
 #[derive(Iden)]
-enum ChatRoom {
+enum ChatRooms {
     Table,
     Id,
     Messages
