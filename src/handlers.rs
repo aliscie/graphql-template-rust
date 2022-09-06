@@ -14,12 +14,12 @@ pub async fn index_graphiql() -> Result<HttpResponse> {
         .body(
             GraphiQLSource::build()
                 .endpoint("http://localhost:5000")
-                .subscription_endpoint("ws://localhost:8000")
+                .subscription_endpoint("ws://localhost:5000")
                 .finish(),
         ))
 }
 
-async fn index_ws(
+pub async fn index_ws(
     schema: web::Data<QuerySchema>,
     req: HttpRequest,
     payload: web::Payload,

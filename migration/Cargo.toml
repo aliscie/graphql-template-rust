@@ -19,6 +19,6 @@ features = [
   # e.g.
   # "runtime-tokio-rustls",  # `ASYNC_RUNTIME` feature
   # "sqlx-postgres",         # `DATABASE_DRIVER` feature
-  "runtime-actix-native-tls",
+  "runtime-tokio-rustls",
   "sqlx-postgres"
 ]

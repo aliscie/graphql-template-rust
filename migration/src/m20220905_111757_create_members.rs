@@ -26,6 +26,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(ColumnDef::new(Members::Name).string().not_null())
                     .col(ColumnDef::new(Members::Knockouts).integer().not_null())
+                    .col(ColumnDef::new(Members::TeamId).integer().not_null())
                     .foreign_key(
                         ForeignKeyCreateStatement::new()
                             .from_tbl(Members::Table)

@@ -11,5 +11,5 @@ path = "src/lib.rs"
 
 [dependencies]
 sea-orm = { version = "^0" }
-async-graphql = "4.0.4"
+async-graphql = { version = "4.0.4", features = ["chrono"]}
 async-graphql-actix-web = "4.0.4"
