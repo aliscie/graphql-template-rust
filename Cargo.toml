@@ -5,7 +5,7 @@ authors = ["Ian Wilson <iwilsonq@gmail.com>"]
 edition = "2021"
 
 [workspace]
-members = [".", "entity", "migration"]
+members = [".", "migration"]
 
 
 [dependencies]
@@ -13,21 +13,22 @@ actix-web = "4.0.1"
 actix-cors = "0.6"
 async-graphql = { version = "4.0.4", features = ["chrono"]}
 async-graphql-actix-web = "4.0.4"
-sea-orm = { version = "^0", features = [ "sqlx-postgres", "runtime-tokio-rustls", "macros" ] }
+sea-orm = { version = "^0", features = ["mock", "debug-print", "sqlx-postgres", "runtime-tokio-rustls", "macros"] }
+
 dotenv = "0.15.0"
 env_logger = "0.9.0"
 futures = "0.3.24"
 serde = {version = "1.0.144", features = ["derive"] }
 serde_derive = "1.0.144"
 serde_json = "1.0.85"
-chrono = { version = "*", features = ["serde"]}
 futures-channel = "0.3.24"
 futures-util = "0.3.24"
 tokio-stream = "0.1.9"
 anyhow = "*"
 
 
-entity = { path = "entity" }
 migration = { path = "migration" }
 
 tokio = { version = "*", features = ["full"] }
+chrono = { version = "*", features = ["serde"] }
+async-std = { version = "^1", features = ["attributes", "tokio1"] }

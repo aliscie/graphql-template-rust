@@ -1011,25 +1011,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "entity"
-version = "0.1.0"
-dependencies = [
- "actix-cors",
- "actix-web",
- "async-graphql",
- "async-graphql-actix-web",
- "chrono",
- "futures",
- "futures-channel",
- "futures-util",
- "sea-orm",
- "serde",
- "serde_json",
- "tokio",
- "tokio-stream",
-]
-
-[[package]]
 name = "env_logger"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2029,9 +2010,9 @@ dependencies = [
  "anyhow",
  "async-graphql",
  "async-graphql-actix-web",
+ "async-std",
  "chrono",
  "dotenv",
- "entity",
  "env_logger",
  "futures",
  "futures-channel",

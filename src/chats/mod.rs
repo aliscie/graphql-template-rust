@@ -15,7 +15,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::Result;
 
 
-
 // use serde::ser::Serialize;
 // #[macro_use]
 // extern crate serde;
@@ -34,6 +33,9 @@ pub struct Message {
 }
 
 
+mod test;
+
+pub use test::*;
 
 mod models;
 mod mutation;

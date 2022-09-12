@@ -8,7 +8,7 @@ mod mutation;
 pub use query::*;
 pub use mutation::*;
 
-mod tests;
+mod test;
 
-pub use tests::*;
+pub use test::*;
 

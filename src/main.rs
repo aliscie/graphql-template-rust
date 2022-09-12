@@ -1,3 +1,7 @@
+pub mod users;
+pub mod teams;
+pub mod chats;
+
 use actix_web::web::Data;
 use async_graphql::*;
 // use async_graphql::{EmptyMutation, EmptySubscription, Schema, SimpleObject};
@@ -8,7 +12,7 @@ use std::collections::HashMap;
 use std::io;
 use std::sync::Arc;
 
-use entity::chats::{Shared};
+use crate::chats::{Shared};
 
 #[macro_use]
 extern crate serde;
