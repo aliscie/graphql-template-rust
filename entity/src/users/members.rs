@@ -18,16 +18,16 @@ pub struct Model {
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
-        belongs_to = "super::teams::Entity",
+        belongs_to = "crate::teams::models::Entity",
         from = "Column::TeamId",
-        to = "super::teams::Column::Id",
+        to = "crate::teams::models::Column::Id",
         on_update = "NoAction",
         on_delete = "NoAction"
     )]
     Teams,
 }
 
-impl Related<super::teams::Entity> for Entity {
+impl Related<crate::teams::models::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Teams.def()
     }
@@ -37,9 +37,9 @@ impl ActiveModelBehavior for ActiveModel {}
 
 #[ComplexObject]
 impl Model {
-    async fn team(&self, ctx: &Context<'_>) -> Result<super::teams::Model, DbErr> {
+    async fn team(&self, ctx: &Context<'_>) -> Result<crate::teams::Model, DbErr> {
         let db = ctx.data::<DatabaseConnection>().unwrap();
-        self.find_related(super::teams::Entity)
+        self.find_related(crate::teams::Entity)
             .one(db)
             .await
             .map(|b| b.unwrap())

@@ -1014,9 +1014,19 @@ dependencies = [
 name = "entity"
 version = "0.1.0"
 dependencies = [
+ "actix-cors",
+ "actix-web",
  "async-graphql",
  "async-graphql-actix-web",
+ "chrono",
+ "futures",
+ "futures-channel",
+ "futures-util",
  "sea-orm",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-stream",
 ]
 
 [[package]]
