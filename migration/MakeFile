@@ -1,0 +1,7 @@
+
+
+migrate:
+	diesel migration generate create_members
+
+run:
+	cargo run

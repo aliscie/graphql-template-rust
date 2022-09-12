@@ -17,3 +17,6 @@ run:
 
 kill:
 	kill -INT $(lsof -t -i :8080)
+
+run_celery_beats:
+	cargo run beat_app

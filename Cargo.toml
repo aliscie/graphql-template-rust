@@ -32,3 +32,4 @@ migration = { path = "migration" }
 tokio = { version = "*", features = ["full"] }
 chrono = { version = "*", features = ["serde"] }
 async-std = { version = "^1", features = ["attributes", "tokio1"] }
+celery = "0.3.1"
