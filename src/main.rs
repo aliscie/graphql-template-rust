@@ -1,7 +1,7 @@
 pub mod users;
 pub mod teams;
 pub mod chats;
-// pub mod posts;
+pub mod posts;
 
 use actix_web::web::Data;
 use async_graphql::*;

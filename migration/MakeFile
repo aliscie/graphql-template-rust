@@ -1,7 +1,11 @@
 
 
 migrate:
-	diesel migration generate create_members
+	sea-orm-cli migrate generate posts
+
+makemigrations:
+	sea-orm-cli migrate generate create_table
+
 
 run:
 	cargo run

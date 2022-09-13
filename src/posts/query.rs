@@ -3,10 +3,10 @@ use crate::users::{self, Entity as Member};
 use sea_orm::{ActiveValue, DatabaseConnection, DbErr, EntityTrait, Statement};
 
 #[derive(Default)]
-pub struct MembersQuery;
+pub struct PostQuery;
 
 #[Object]
-impl MembersQuery {
+impl PostQuery {
     async fn members<'a>(&self, ctx: &Context<'a>) -> Result<Vec<crate::users::Model>, DbErr> {
         let database = ctx.data_unchecked::<DatabaseConnection>();
         Member::find().all(database).await

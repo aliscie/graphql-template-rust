@@ -9,8 +9,7 @@ init:
 	sea-orm-cli migrate init
 
 
-migrate:
-	diesel migration generate create_members
+
 
 run:
 	cargo run
@@ -20,3 +19,16 @@ kill:
 
 run_celery_beats:
 	cargo run beat_app
+
+
+
+
+migrate:
+	sea-orm-cli migrate generate posts
+
+
+run:
+	cargo run
+#
+#migrate:
+#	diesel migration generate create_members
